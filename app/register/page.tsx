@@ -15,7 +15,8 @@ import {
   CheckCircle,
   ArrowRight,
   Eye,
-  EyeOff
+  EyeOff,
+  Building
 } from 'lucide-react';
 
 const fadeInUp = {
