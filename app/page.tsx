@@ -1,4 +1,3 @@
-
 'use client'
 
 import { motion } from 'framer-motion';
@@ -79,7 +78,7 @@ export default function Home() {
         title="Platform Digital"
         subtitle="Multitenancy"
         description="Bangun bisnis digital Anda dengan website pribadi untuk menjual social media management, top up game, PPOB, dan akun premium"
-      /></PageLayout>
+      />
 
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -251,6 +250,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
+    </PageLayout>
   );
 }

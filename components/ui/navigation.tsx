@@ -1,9 +1,11 @@
 
 'use client'
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { LogOut, User } from 'lucide-react';
 
 interface NavigationProps {
   currentPage?: string;
@@ -11,6 +13,26 @@ interface NavigationProps {
 }
 
 export default function Navigation({ currentPage, showRegisterButton = true }: NavigationProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    // Check if user is logged in (from localStorage for demo purposes)
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setIsLoggedIn(true);
+      setUserName(user.name || user.fullName || 'User');
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('userData');
+    setIsLoggedIn(false);
+    setUserName('');
+    window.location.href = '/';
+  };
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,7 +65,7 @@ export default function Navigation({ currentPage, showRegisterButton = true }: N
               Harga
             </Link>
             <Link 
-              href="/about" 
+              href="/about"
               className={`transition-colors ${currentPage === 'about' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
             >
               Tentang
@@ -68,17 +90,44 @@ export default function Navigation({ currentPage, showRegisterButton = true }: N
             </Link>
           </motion.div>
           
-          {showRegisterButton && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                <Link href="/register">Mulai Sekarang</Link>
-              </Button>
-            </motion.div>
-          )}
+          <motion.div
+            className="flex items-center space-x-4"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            {isLoggedIn ? (
+              <div className="flex items-center space-x-4">
+                <Link 
+                  href="/dashboard"
+                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  <span>{userName}</span>
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Button variant="outline" asChild className="border-purple-400 text-purple-400">
+                  <Link href="/login">Masuk</Link>
+                </Button>
+                {showRegisterButton && (
+                  <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                    <Link href="/register">Mulai Sekarang</Link>
+                  </Button>
+                )}
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
     </nav>

@@ -74,8 +74,28 @@ export default function Register() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration data:', formData);
-    // Handle registration logic here
+    
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      alert('Password tidak cocok!');
+      return;
+    }
+
+    // For demo purposes, save user data to localStorage
+    const userData = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      businessName: formData.businessName,
+      subdomain: formData.subdomain,
+      registrationTime: new Date().toISOString()
+    };
+    
+    localStorage.setItem('userData', JSON.stringify(userData));
+    console.log('Registration successful:', userData);
+    
+    // Redirect to dashboard
+    window.location.href = '/dashboard';
   };
 
   const generateSubdomain = (businessName: string) => {

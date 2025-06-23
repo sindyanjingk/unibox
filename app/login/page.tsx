@@ -93,9 +93,19 @@ export default function Login() {
     
     // Simulate login process
     setTimeout(() => {
-      console.log('Login data:', formData);
+      // For demo purposes, save user data to localStorage
+      const userData = {
+        email: formData.email,
+        name: formData.email.split('@')[0],
+        loginTime: new Date().toISOString()
+      };
+      
+      localStorage.setItem('userData', JSON.stringify(userData));
+      console.log('Login successful:', userData);
       setIsLoading(false);
-      // Redirect to dashboard after successful login
+      
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
     }, 2000);
   };
 
