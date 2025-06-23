@@ -1,417 +1,273 @@
 'use client'
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Lock, 
-  Building, 
-  Globe, 
-  CheckCircle, 
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Smartphone,
-  Gamepad2,
-  CreditCard,
-  Crown
-} from 'lucide-react';
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 40 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
-
-const benefits = [
-  {
-    icon: Smartphone,
-    title: 'Social Media Management',
-    description: 'Jual followers, likes, views untuk semua platform'
-  },
-  {
-    icon: Gamepad2,
-    title: 'Top Up Game',
-    description: 'Diamond ML, UC PUBG, dan 50+ game lainnya'
-  },
-  {
-    icon: CreditCard,
-    title: 'PPOB Lengkap',
-    description: 'Bayar listrik, air, internet, dan 1000+ biller'
-  },
-  {
-    icon: Crown,
-    title: 'Premium Accounts',
-    description: 'Netflix, Spotify, Microsoft 365, dan banyak lagi'
-  }
-];
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Eye, EyeOff, User, Mail, Lock, Globe, Store, Phone } from 'lucide-react'
+import PageLayout from '@/components/ui/page-layout'
 
 export default function Register() {
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [registrationType, setRegistrationType] = useState<'admin' | 'tenant'>('tenant')
+
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
-    phone: '',
     password: '',
-    confirmPassword: '',
-    businessName: '',
-    subdomain: '',
-    agreeTerms: true
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    phone: '',
+    tenantSlug: '',
+    tenantName: ''
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        phone: formData.phone,
+        ...(registrationType === 'tenant' && {
+          tenantSlug: formData.tenantSlug,
+          tenantName: formData.tenantName
+        })
+      }
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      setSuccess(data.message)
+
+      // Redirect after successful registration
+      setTimeout(() => {
+        if (registrationType === 'admin') {
+          router.push('/login')
+        } else {
+          router.push(`/reseller/${formData.tenantSlug}/login`)
+        }
+      }, 2000)
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Registration failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      alert('Password tidak cocok!');
-      return;
-    }
-
-    // For demo purposes, save user data to localStorage
-    const userData = {
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      businessName: formData.businessName,
-      subdomain: formData.subdomain,
-      registrationTime: new Date().toISOString()
-    };
-    
-    localStorage.setItem('userData', JSON.stringify(userData));
-    console.log('Registration successful:', userData);
-    
-    // Redirect to dashboard
-    window.location.href = '/dashboard';
-  };
-
-  const generateSubdomain = (businessName: string) => {
-    return businessName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .substring(0, 15);
-  };
-
-  const handleBusinessNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFormData(prev => ({
-      ...prev,
-      businessName: value,
-      subdomain: generateSubdomain(value)
-    }));
-  };
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              UniBox
-            </Link>
-            <div className="hidden md:flex space-x-8">
-              <Link href="/features" className="text-gray-300 hover:text-white transition-colors">
-                Fitur
-              </Link>
-              <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
-                Harga
-              </Link>
-              <Link href="/demo" className="text-gray-300 hover:text-white transition-colors">
-                Demo
-              </Link>
-            </div>
-            <Button variant="outline" asChild className="border-purple-400 text-purple-400">
-              <Link href="/login">Masuk</Link>
-            </Button>
+    <PageLayout currentPage="register" showRegisterButton={false}>
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-white mb-2">Daftar Akun Baru</h2>
+            <p className="text-gray-300">Mulai bisnis digital Anda hari ini</p>
           </div>
-        </div>
-      </nav>
 
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Left Side - Benefits */}
-            <motion.div
-              className="space-y-8"
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                  Mulai Bisnis Digital Anda dengan{' '}
-                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    UniBox
-                  </span>
-                </h1>
-                <p className="text-xl text-gray-300 mb-8">
-                  Dapatkan website pribadi dengan subdomain sendiri dan mulai jual berbagai produk digital dengan margin keuntungan hingga 50%
-                </p>
-              </div>
-
-              {/* Benefits List */}
-              <div className="space-y-6">
-                {benefits.map((benefit, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex items-start space-x-4 p-4 bg-white/5 rounded-lg border border-white/10"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold mb-2">{benefit.title}</h3>
-                      <p className="text-gray-300 text-sm">{benefit.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Quick Stats */}
-              <motion.div
-                className="grid grid-cols-3 gap-4 pt-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
+          {/* Registration Type Toggle */}
+          <div className="bg-white/10 p-1 rounded-lg backdrop-blur-sm">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                onClick={() => setRegistrationType('tenant')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  registrationType === 'tenant'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-white hover:bg-white/10'
+                }`}
               >
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400">5000+</div>
-                  <div className="text-gray-400 text-sm">Reseller Aktif</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">1M+</div>
-                  <div className="text-gray-400 text-sm">Transaksi/Bulan</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400">99.9%</div>
-                  <div className="text-gray-400 text-sm">Uptime</div>
-                </div>
-              </motion.div>
-            </motion.div>
+                Buat Website Toko
+              </button>
+              <button
+                type="button"
+                onClick={() => setRegistrationType('admin')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  registrationType === 'admin'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                Admin UniBox
+              </button>
+            </div>
+          </div>
 
-            {/* Right Side - Registration Form */}
-            <motion.div
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Daftar Sekarang</h2>
-                <p className="text-gray-300">Mulai bisnis digital Anda hari ini</p>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              {/* Personal Info */}
+              <div>
+                <label htmlFor="name" className="sr-only">Nama Lengkap</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Nama Lengkap"
+                  />
+                </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Full Name */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Nama Lengkap
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="Masukkan nama lengkap"
-                      required
-                    />
-                  </div>
+              <div>
+                <label htmlFor="email" className="sr-only">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Email Address"
+                  />
                 </div>
+              </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="nama@email.com"
-                      required
-                    />
-                  </div>
+              <div>
+                <label htmlFor="phone" className="sr-only">Nomor Telepon</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Nomor Telepon (opsional)"
+                  />
                 </div>
+              </div>
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Nomor WhatsApp
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="08123456789"
-                      required
-                    />
-                  </div>
+              <div>
+                <label htmlFor="password" className="sr-only">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="pl-10 pr-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
                 </div>
+              </div>
 
-                {/* Password */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="Minimal 8 karakter"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Konfirmasi Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="Ulangi password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Business Name */}
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Nama Bisnis
-                  </label>
-                  <div className="relative">
-                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="businessName"
-                      value={formData.businessName}
-                      onChange={handleBusinessNameChange}
-                      className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400"
-                      placeholder="Nama toko/bisnis Anda"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Subdomain Preview */}
-                {formData.subdomain && (
+              {/* Tenant Info - only show if creating tenant */}
+              {registrationType === 'tenant' && (
+                <>
                   <div>
-                    <label className="block text-white text-sm font-medium mb-2">
-                      Website Anda
-                    </label>
-                    <div className="bg-purple-500/20 border border-purple-400/50 rounded-lg p-3">
-                      <div className="flex items-center space-x-2">
-                        <Globe className="w-5 h-5 text-purple-400" />
-                        <span className="text-purple-300 font-medium">
-                          {formData.subdomain}.unibox.id
-                        </span>
-                      </div>
-                      <p className="text-purple-200 text-sm mt-1">
-                        Ini akan menjadi alamat website Anda
-                      </p>
+                    <label htmlFor="tenantName" className="sr-only">Nama Toko</label>
+                    <div className="relative">
+                      <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        id="tenantName"
+                        name="tenantName"
+                        type="text"
+                        required={registrationType === 'tenant'}
+                        value={formData.tenantName}
+                        onChange={handleInputChange}
+                        className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Nama Toko (contoh: Toko Digital Barokah)"
+                      />
                     </div>
                   </div>
-                )}
 
-                {/* Terms Agreement */}
-                <div className="flex items-start space-x-3">
-                  <input
-                    type="checkbox"
-                    name="agreeTerms"
-                    checked={formData.agreeTerms}
-                    onChange={handleInputChange}
-                    className="mt-1 w-4 h-4 bg-white/10 border border-white/20 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
-                    required
-                  />
-                  <p className="text-gray-300 text-sm">
-                    Saya setuju dengan{' '}
-                    <Link href="/terms" className="text-purple-400 hover:text-purple-300">
-                      Syarat & Ketentuan
-                    </Link>{' '}
-                    dan{' '}
-                    <Link href="/privacy" className="text-purple-400 hover:text-purple-300">
-                      Kebijakan Privasi
-                    </Link>
-                  </p>
-                </div>
+                  <div>
+                    <label htmlFor="tenantSlug" className="sr-only">URL Website</label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        id="tenantSlug"
+                        name="tenantSlug"
+                        type="text"
+                        required={registrationType === 'tenant'}
+                        value={formData.tenantSlug}
+                        onChange={handleInputChange}
+                        className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="URL Website (contoh: tokobarokah)"
+                        pattern="[a-zA-Z0-9-]+"
+                        title="Hanya huruf, angka, dan tanda hubung"
+                      />
+                    </div>
+                    {formData.tenantSlug && (
+                      <p className="mt-1 text-sm text-gray-300">
+                        Website Anda: <span className="text-purple-300">{formData.tenantSlug}.unibox.id</span>
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 text-lg"
-                >
-                  Daftar Sekarang
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+            )}
 
-                {/* Login Link */}
-                <div className="text-center">
-                  <p className="text-gray-300">
-                    Sudah punya akun?{' '}
-                    <Link href="/login" className="text-purple-400 hover:text-purple-300 font-semibold">
-                      Masuk di sini
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+            {success && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                <p className="text-green-300 text-sm">{success}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {loading ? 'Mendaftar...' : (registrationType === 'tenant' ? 'Buat Website & Akun' : 'Daftar Admin')}
+            </button>
+
+            <div className="text-center">
+              <p className="text-gray-300 text-sm">
+                Sudah punya akun?{' '}
+                <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                  Masuk disini
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
-  );
+    </PageLayout>
+  )
 }
