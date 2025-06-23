@@ -1,38 +1,32 @@
-
 'use client'
 
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import PageLayout from '@/components/ui/page-layout';
 import HeroSection from '@/components/ui/hero-section';
 import SectionHeader from '@/components/ui/section-header';
 import ProductCard from '@/components/ui/product-card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { 
-  Shield, 
-  Clock, 
+  Smartphone, 
+  Gamepad2, 
+  CreditCard, 
+  Crown, 
   Users, 
   TrendingUp,
-  CheckCircle,
-  Star,
-  ArrowRight,
-  Zap,
+  Shield,
   Globe,
-  HeadphonesIcon,
-  Smartphone,
-  Gamepad2,
-  CreditCard,
-  Crown
+  ArrowRight,
+  CheckCircle
 } from 'lucide-react';
 
 const fadeInUp = {
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 },
-  viewport: { once: true }
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
 };
 
-const stagger = {
+const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.1
@@ -40,247 +34,222 @@ const stagger = {
   }
 };
 
-export default function HomePage() {
+const features = [
+  {
+    icon: Smartphone,
+    title: "Social Media Management",
+    description: "Kelola semua akun media sosial dengan mudah dan efisien",
+    gradient: "from-pink-500 to-purple-600"
+  },
+  {
+    icon: Gamepad2,
+    title: "Top Up Game",
+    description: "Isi ulang diamond, coin, dan item game favorit dengan harga terbaik",
+    gradient: "from-green-500 to-emerald-600"
+  },
+  {
+    icon: CreditCard,
+    title: "PPOB",
+    description: "Bayar tagihan listrik, air, telepon, dan kebutuhan sehari-hari",
+    gradient: "from-blue-500 to-cyan-600"
+  },
+  {
+    icon: Crown,
+    title: "Akun Premium",
+    description: "Jual akses premium Netflix, Spotify, dan layanan digital lainnya",
+    gradient: "from-yellow-500 to-orange-600"
+  }
+];
+
+const benefits = [
+  "Website pribadi dengan subdomain sendiri",
+  "Dashboard admin yang mudah digunakan",
+  "Integrasi payment gateway lengkap",
+  "Support 24/7 dari tim kami",
+  "Margin keuntungan yang menggiurkan",
+  "Sistem otomatis dan real-time"
+];
+
+export default function Home() {
   return (
-    <PageLayout>
+    <PageLayout currentPage="home">
       {/* Hero Section */}
       <HeroSection
-        title="Platform Digital Terpercaya untuk Semua Kebutuhan Bisnis Online"
-        subtitle="Kelola bisnis digital Anda dengan mudah. Dari social media management hingga produk premium, semua ada di satu platform."
-        primaryCta={{ text: 'Mulai Gratis', href: '/register' }}
-        secondaryCta={{ text: 'Lihat Demo', href: '/demo' }}
-        backgroundImage="/api/placeholder/1920/1080"
+        title="Platform Digital"
+        subtitle="Multitenancy"
+        description="Bangun bisnis digital Anda dengan website pribadi untuk menjual social media management, top up game, PPOB, dan akun premium"
       />
 
       {/* Features Section */}
-      <section className="section-padding bg-white">
-        <div className="max-w-7xl mx-auto container-padding">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <SectionHeader
-            title="Mengapa Memilih UniBox?"
-            subtitle="Platform lengkap dengan fitur-fitur canggih untuk mengembangkan bisnis digital Anda"
+            title="Produk Digital Terlengkap"
+            subtitle="Semua yang Anda butuhkan untuk memulai bisnis digital yang menguntungkan"
           />
 
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {[
-              {
-                icon: Shield,
-                title: 'Keamanan Terjamin',
-                description: 'Sistem keamanan berlapis dengan enkripsi end-to-end untuk melindungi data dan transaksi Anda.'
-              },
-              {
-                icon: Clock,
-                title: 'Proses Instan',
-                description: 'Automated system untuk pemrosesan order yang cepat dan efisien 24/7.'
-              },
-              {
-                icon: Users,
-                title: 'Multi-Tenant Support',
-                description: 'Setiap reseller mendapat website sendiri dengan domain kustom dan branding personal.'
-              },
-              {
-                icon: TrendingUp,
-                title: 'Analytics Mendalam',
-                description: 'Dashboard analytics lengkap untuk memantau performa bisnis dan mengoptimalkan strategi.'
-              },
-              {
-                icon: Zap,
-                title: 'API Integration',
-                description: 'Integrasi mudah dengan berbagai provider untuk memastikan stok dan layanan selalu tersedia.'
-              },
-              {
-                icon: HeadphonesIcon,
-                title: 'Support 24/7',
-                description: 'Tim support professional siap membantu Anda kapan saja melalui berbagai channel komunikasi.'
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Products Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="max-w-7xl mx-auto container-padding">
-          <SectionHeader
-            title="Produk Digital Lengkap"
-            subtitle="Berbagai macam produk digital untuk memenuhi kebutuhan customer Anda"
-          />
-
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <ProductCard
-              title="Social Media Management"
-              description="Followers, likes, views untuk semua platform media sosial populer"
-              icon={<Smartphone className="w-8 h-8" />}
-              price="Mulai dari Rp 5.000"
-              features={['Instagram', 'TikTok', 'YouTube', 'Facebook']}
-              href="/social-media"
-            />
-            <ProductCard
-              title="Gaming Top Up"
-              description="Diamond, UC, voucher game untuk semua game populer"
-              icon={<Gamepad2 className="w-8 h-8" />}
-              price="Mulai dari Rp 10.000"
-              features={['Mobile Legends', 'Free Fire', 'PUBG', 'Genshin Impact']}
-              href="/gaming"
-            />
-            <ProductCard
-              title="PPOB"
-              description="Pembayaran tagihan dan pulsa dengan sistem terintegrasi"
-              icon={<CreditCard className="w-8 h-8" />}
-              price="Sesuai nominal"
-              features={['Pulsa', 'Token Listrik', 'BPJS', 'Tagihan']}
-              href="/ppob"
-            />
-            <ProductCard
-              title="Premium Accounts"
-              description="Account premium Netflix, Spotify, dan layanan digital lainnya"
-              icon={<Crown className="w-8 h-8" />}
-              price="Mulai dari Rp 15.000"
-              features={['Netflix', 'Spotify', 'YouTube Premium', 'AI Tools']}
-              href="/premium"
-            />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="section-padding bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-        <div className="max-w-7xl mx-auto container-padding">
           <motion.div 
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-            variants={stagger}
+            variants={staggerContainer}
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
           >
-            {[
-              { number: '1000+', label: 'Reseller Aktif', icon: Users },
-              { number: '10M+', label: 'Transaksi Selesai', icon: CheckCircle },
-              { number: '99.9%', label: 'Uptime Server', icon: Globe },
-              { number: '4.9★', label: 'Rating Customer', icon: Star }
-            ].map((stat, index) => (
-              <motion.div
+            {features.map((feature, index) => (
+              <ProductCard
                 key={index}
-                variants={fadeInUp}
-                className="text-center"
-              >
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="w-8 h-8" />
-                </div>
-                <div className="text-3xl font-bold mb-2">{stat.number}</div>
-                <div className="text-purple-100">{stat.label}</div>
-              </motion.div>
+                name={feature.title}
+                price=""
+                description={feature.description}
+                icon={feature.icon}
+                gradient={feature.gradient}
+                index={index}
+              />
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="section-padding bg-white">
-        <div className="max-w-7xl mx-auto container-padding">
-          <SectionHeader
-            title="Cara Kerja Platform"
-            subtitle="Mulai bisnis digital Anda hanya dalam 3 langkah mudah"
-          />
+      {/* Benefits Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Kenapa Pilih <span className="text-purple-400">UniBox</span>?
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Platform all-in-one yang memberikan Anda kebebasan penuh untuk 
+                membangun dan mengembangkan bisnis digital Anda.
+              </p>
+              <div className="space-y-4">
+                {benefits.map((benefit, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-center space-x-3"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                    <span className="text-gray-300">{benefit}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
 
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {[
-              {
-                step: '1',
-                title: 'Daftar & Setup',
-                description: 'Buat akun dan setup website reseller Anda dengan domain custom',
-                color: 'bg-blue-500'
-              },
-              {
-                step: '2',
-                title: 'Import Produk',
-                description: 'Pilih dan import produk yang ingin dijual dari katalog lengkap kami',
-                color: 'bg-purple-500'
-              },
-              {
-                step: '3',
-                title: 'Mulai Jualan',
-                description: 'Promosikan website Anda dan mulai menerima order dari customer',
-                color: 'bg-pink-500'
-              }
-            ].map((step, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className="text-center relative"
-              >
-                <div className={`w-16 h-16 ${step.color} rounded-full flex items-center justify-center mx-auto mb-6`}>
-                  <span className="text-2xl font-bold text-white">{step.step}</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
-                
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full">
-                    <ArrowRight className="w-6 h-6 text-gray-300 mx-auto" />
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white mb-2">500+</div>
+                    <div className="text-gray-300">Reseller Aktif</div>
                   </div>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white mb-2">1M+</div>
+                    <div className="text-gray-300">Transaksi/Bulan</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white mb-2">99.9%</div>
+                    <div className="text-gray-300">Uptime</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white mb-2">24/7</div>
+                    <div className="text-gray-300">Support</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding bg-gray-900 text-white">
-        <div className="max-w-4xl mx-auto container-padding text-center">
-          <motion.div {...fadeInUp}>
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Siap Memulai Bisnis Digital Anda?
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Bergabung dengan ribuan reseller sukses dan mulai hasilkan income dari bisnis digital
+              Bergabunglah dengan ribuan reseller yang sudah merasakan keuntungan 
+              dari platform UniBox
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-lg px-12 py-6"
+              asChild
+            >
               <Link href="/register">
-                <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-                  Mulai Gratis Sekarang
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
+                Mulai Sekarang - Gratis!
               </Link>
-              <Link href="/contact">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
-                  Hubungi Sales
-                </Button>
-              </Link>
-            </div>
+            </Button>
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+                UniBox
+              </div>
+              <p className="text-gray-400">
+                Platform terdepan untuk bisnis digital multitenancy di Indonesia
+              </p>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Produk</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/social-media" className="hover:text-white transition-colors">Social Media</Link></li>
+                <li><Link href="/gaming" className="hover:text-white transition-colors">Gaming</Link></li>
+                <li><Link href="/ppob" className="hover:text-white transition-colors">PPOB</Link></li>
+                <li><Link href="/premium" className="hover:text-white transition-colors">Premium Accounts</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Perusahaan</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-white transition-colors">Tentang Kami</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Kontak</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link href="/careers" className="hover:text-white transition-colors">Karir</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/help" className="hover:text-white transition-colors">Bantuan</Link></li>
+                <li><Link href="/docs" className="hover:text-white transition-colors">Dokumentasi</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Syarat & Ketentuan</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-white/10 mt-12 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 UniBox. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </PageLayout>
   );
 }

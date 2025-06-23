@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^6.10.1",
     "@radix-ui/react-slot": "^1.2.3",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
@@ -17,7 +16,6 @@
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.522.0",
     "next": "14.2.24",
-    "prisma": "^6.10.1",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^3.3.1",
