@@ -1,0 +1,248 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tenant model untuk setiap reseller
+model Tenant {
+  id          String   @id @default(cuid())
+  slug        String   @unique // subdomain slug
+  name        String   // nama toko
+  description String?
+  logo        String?
+  
+  // Contact info
+  email       String?
+  phone       String?
+  whatsapp    String?
+  address     String?
+  
+  // Store settings
+  isActive    Boolean  @default(true)
+  verified    Boolean  @default(false)
+  
+  // Branding
+  primaryColor    String @default("#6366f1")
+  secondaryColor  String @default("#8b5cf6")
+  
+  // Business info
+  joinedAt    DateTime @default(now())
+  totalOrders Int      @default(0)
+  totalRevenue Decimal @default(0) @db.Decimal(12,2)
+  
+  // Relations
+  users       User[]
+  products    Product[]
+  orders      Order[]
+  categories  Category[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("tenants")
+}
+
+// User model untuk customer di setiap tenant
+model User {
+  id          String   @id @default(cuid())
+  email       String
+  fullName    String
+  phone       String?
+  password    String   // hashed password
+  
+  // User status
+  isActive    Boolean  @default(true)
+  emailVerified Boolean @default(false)
+  
+  // Tenant relation
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  orders      Order[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Unique constraint per tenant
+  @@unique([email, tenantId])
+  @@map("users")
+}
+
+// Category model untuk mengorganisir produk
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  icon        String?
+  
+  // Tenant relation
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  products    Product[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Unique constraint per tenant
+  @@unique([slug, tenantId])
+  @@map("categories")
+}
+
+// Product model untuk produk digital
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  image       String?
+  
+  // Pricing
+  price       Decimal  @db.Decimal(10,2)
+  originalPrice Decimal? @db.Decimal(10,2)
+  cost        Decimal  @db.Decimal(10,2) // harga modal
+  
+  // Product info
+  sku         String?
+  isActive    Boolean  @default(true)
+  isDigital   Boolean  @default(true)
+  
+  // Stats
+  sold        Int      @default(0)
+  rating      Decimal  @default(0) @db.Decimal(2,1)
+  reviewCount Int      @default(0)
+  
+  // Provider info (untuk integrasi API)
+  provider    String?  // digiflazz, atlantic-pedia, dll
+  providerCode String? // kode produk di provider
+  
+  // Category relation
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  
+  // Tenant relation
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  orderItems  OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Unique constraint per tenant
+  @@unique([slug, tenantId])
+  @@map("products")
+}
+
+// Order model untuk transaksi
+model Order {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique // INV-20241215-001
+  
+  // Customer info
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  
+  // Order amounts
+  subtotal    Decimal  @db.Decimal(10,2)
+  fee         Decimal  @default(0) @db.Decimal(10,2)
+  total       Decimal  @db.Decimal(10,2)
+  profit      Decimal  @default(0) @db.Decimal(10,2)
+  
+  // Order status
+  status      OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+  
+  // Provider info
+  providerOrderId String? // ID order dari provider
+  providerStatus  String?
+  
+  // Notes
+  notes       String?
+  adminNotes  String?
+  
+  // User relation (optional, jika customer login)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  // Tenant relation
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  orderItems  OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("orders")
+}
+
+// OrderItem model untuk detail item dalam order
+model OrderItem {
+  id          String   @id @default(cuid())
+  
+  // Product info (snapshot saat order)
+  productName String
+  productSku  String?
+  price       Decimal  @db.Decimal(10,2)
+  cost        Decimal  @db.Decimal(10,2)
+  quantity    Int      @default(1)
+  
+  // Target info (untuk produk digital)
+  targetId    String?  // user ID, nomor HP, dll
+  targetData  String?  // data tambahan dalam JSON format
+  
+  // Status
+  status      OrderItemStatus @default(PENDING)
+  
+  // Product relation
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  // Order relation
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("order_items")
+}
+
+// Enums
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
