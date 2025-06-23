@@ -129,3 +129,140 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { name, email, password, phone, registrationType, tenantName, tenantSlug } = body
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        ...(tenantSlug ? {
+          tenant: {
+            slug: tenantSlug
+          }
+        } : {
+          tenantId: null
+        })
+      }
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User already exists' },
+        { status: 400 }
+      )
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    if (registrationType === 'tenant') {
+      // Check if tenant slug is available
+      const existingTenant = await prisma.tenant.findUnique({
+        where: { slug: tenantSlug }
+      })
+
+      if (existingTenant) {
+        return NextResponse.json(
+          { error: 'Tenant slug already exists' },
+          { status: 400 }
+        )
+      }
+
+      // Create tenant and owner user in transaction
+      const result = await prisma.$transaction(async (tx) => {
+        const tenant = await tx.tenant.create({
+          data: {
+            name: tenantName,
+            slug: tenantSlug,
+            primaryColor: '#8B5CF6',
+            isActive: true
+          }
+        })
+
+        const user = await tx.user.create({
+          data: {
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            role: 'OWNER',
+            tenantId: tenant.id
+          }
+        })
+
+        return { tenant, user }
+      })
+
+      return NextResponse.json({
+        message: 'Tenant and user created successfully',
+        tenant: result.tenant,
+        user: { id: result.user.id, email: result.user.email, name: result.user.name }
+      })
+
+    } else if (registrationType === 'admin') {
+      // Create admin user
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          phone,
+          role: 'ADMIN',
+          tenantId: null
+        }
+      })
+
+      return NextResponse.json({
+        message: 'Admin user created successfully',
+        user: { id: user.id, email: user.email, name: user.name }
+      })
+
+    } else if (registrationType === 'customer' && tenantSlug) {
+      // Register customer to specific tenant
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug: tenantSlug }
+      })
+
+      if (!tenant) {
+        return NextResponse.json(
+          { error: 'Tenant not found' },
+          { status: 404 }
+        )
+      }
+
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          phone,
+          role: 'CUSTOMER',
+          tenantId: tenant.id
+        }
+      })
+
+      return NextResponse.json({
+        message: 'Customer registered successfully',
+        user: { id: user.id, email: user.email, name: user.name }
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Invalid registration type' },
+      { status: 400 }
+    )
+
+  } catch (error) {
+    console.error('Registration error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

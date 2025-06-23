@@ -1,10 +1,11 @@
-
 'use client'
 
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -23,6 +24,10 @@ const fadeInUp = {
 };
 
 export default function ResellerUserRegister({ params }: { params: { slug: string } }) {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -31,8 +36,7 @@ export default function ResellerUserRegister({ params }: { params: { slug: strin
     confirmPassword: '',
     agreeTerms: false
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -42,10 +46,74 @@ export default function ResellerUserRegister({ params }: { params: { slug: strin
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('User registration for', params.slug, formData);
-    // Handle user registration logic here
+    setError('');
+    setIsLoading(true);
+
+    // Basic validation
+    if (!formData.fullName || !formData.email || !formData.password || !formData.phone) {
+      setError('Please fill in all fields');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      setError('Please agree to the terms and conditions');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          registrationType: 'customer',
+          tenantSlug: params.slug
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Auto login after successful registration
+      const loginResult = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        tenantSlug: params.slug,
+        userType: 'customer',
+        redirect: false
+      });
+
+      if (loginResult?.error) {
+        // Registration successful but login failed, redirect to login
+        router.push(`/reseller/${params.slug}/login`);
+      } else {
+        // Both registration and login successful
+        router.push(`/reseller/${params.slug}/user-dashboard`);
+      }
+
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -202,11 +270,17 @@ export default function ResellerUserRegister({ params }: { params: { slug: strin
               <Button
                 type="submit"
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3"
+                disabled={isLoading}
               >
-                Daftar Sekarang
+                {isLoading ? 'Mendaftarkan...' : 'Daftar Sekarang'}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </motion.div>
+             {error && (
+              <motion.div variants={fadeInUp} className="text-center mt-3">
+                <p className="text-red-500 text-sm">{error}</p>
+              </motion.div>
+            )}
           </form>
 
           {/* Login Link */}

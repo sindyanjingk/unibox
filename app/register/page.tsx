@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { Eye, EyeOff, User, Mail, Lock, Globe, Store, Phone } from 'lucide-react'
 import PageLayout from '@/components/ui/page-layout'

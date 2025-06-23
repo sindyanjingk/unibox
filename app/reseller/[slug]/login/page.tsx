@@ -1,51 +1,55 @@
-
 'use client'
 
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useState } from 'react';
-import { 
-  Mail, 
-  Lock, 
-  ArrowRight,
-  Eye,
-  EyeOff,
-  CheckCircle
-} from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 40 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
-
-export default function ResellerUserLogin({ params }: { params: { slug: string } }) {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
-  });
+export default function ResellerLoginPage({ params }: { params: { slug: string } }) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
-    console.log('User login for', params.slug, formData);
-    // Simulate login and redirect to user dashboard
-    setTimeout(() => {
+
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
       setIsLoading(false);
-      window.location.href = `/reseller/${params.slug}/user-dashboard`;
-    }, 2000);
+      return;
+    }
+
+    try {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        tenantSlug: params.slug,
+        userType: 'customer',
+        redirect: false
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else {
+        // Redirect to user dashboard
+        router.push(`/reseller/${params.slug}/user-dashboard`);
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,7 +78,7 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Email
               </label>
@@ -90,10 +94,10 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
                   required
                 />
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Password */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Password
               </label>
@@ -116,10 +120,10 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Remember Me and Forgot Password */}
-            <motion.div variants={fadeInUp} className="flex items-center justify-between">
+            {/* <motion.div variants={fadeInUp} className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -133,10 +137,10 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
               <Link href={`/reseller/${params.slug}/forgot-password`} className="text-sm text-purple-600 hover:text-purple-700">
                 Lupa password?
               </Link>
-            </motion.div>
+            </motion.div> */}
 
             {/* Submit Button */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <Button
                 type="submit"
                 disabled={isLoading}
@@ -153,11 +157,11 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
                   </>
                 )}
               </Button>
-            </motion.div>
+            </motion.div> */}
           </form>
 
           {/* Register Link */}
-          <motion.div 
+          {/* <motion.div 
             className="text-center mt-6"
             variants={fadeInUp}
           >
@@ -167,11 +171,11 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
                 Daftar di sini
               </Link>
             </p>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
 
         {/* Quick Info */}
-        <motion.div
+        {/* <motion.div
           className="mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -191,7 +195,7 @@ export default function ResellerUserLogin({ params }: { params: { slug: string }
               <p className="text-sm text-gray-600">Support 24/7</p>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );
