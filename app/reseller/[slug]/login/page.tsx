@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react';
@@ -7,13 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle } from 'lucide-react';
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 40 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function ResellerLoginPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -25,19 +18,12 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
   });
   const [error, setError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    // Basic validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       setIsLoading(false);
@@ -56,6 +42,7 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
       if (result?.error) {
         setError('Invalid email or password');
       } else {
+        // Redirect to user dashboard
         router.push(`/reseller/${params.slug}/user-dashboard`);
       }
     } catch (err) {
@@ -91,7 +78,7 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Email
               </label>
@@ -107,10 +94,10 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
                   required
                 />
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Password */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Password
               </label>
@@ -133,13 +120,16 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Remember Me and Forgot Password */}
-            <motion.div variants={fadeInUp} className="flex items-center justify-between">
+            {/* <motion.div variants={fadeInUp} className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
                   type="checkbox"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleInputChange}
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
                 <label className="ml-2 text-sm text-gray-600">Ingat saya</label>
@@ -147,17 +137,10 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
               <Link href={`/reseller/${params.slug}/forgot-password`} className="text-sm text-purple-600 hover:text-purple-700">
                 Lupa password?
               </Link>
-            </motion.div>
-
-            {/* Error Message */}
-            {error && (
-              <motion.div variants={fadeInUp} className="text-center">
-                <p className="text-red-500 text-sm">{error}</p>
-              </motion.div>
-            )}
+            </motion.div> */}
 
             {/* Submit Button */}
-            <motion.div variants={fadeInUp}>
+            {/* <motion.div variants={fadeInUp}>
               <Button
                 type="submit"
                 disabled={isLoading}
@@ -174,11 +157,11 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
                   </>
                 )}
               </Button>
-            </motion.div>
+            </motion.div> */}
           </form>
 
           {/* Register Link */}
-          <motion.div 
+          {/* <motion.div 
             className="text-center mt-6"
             variants={fadeInUp}
           >
@@ -188,11 +171,11 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
                 Daftar di sini
               </Link>
             </p>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
 
         {/* Quick Info */}
-        <motion.div
+        {/* <motion.div
           className="mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -212,7 +195,7 @@ export default function ResellerLoginPage({ params }: { params: { slug: string }
               <p className="text-sm text-gray-600">Support 24/7</p>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );
