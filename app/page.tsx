@@ -18,7 +18,11 @@ import {
   ArrowRight,
   Zap,
   Globe,
-  HeadphonesIcon
+  HeadphonesIcon,
+  Smartphone,
+  Gamepad2,
+  CreditCard,
+  Crown
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -129,7 +133,7 @@ export default function HomePage() {
             <ProductCard
               title="Social Media Management"
               description="Followers, likes, views untuk semua platform media sosial populer"
-              icon="📱"
+              icon={<Smartphone className="w-8 h-8" />}
               price="Mulai dari Rp 5.000"
               features={['Instagram', 'TikTok', 'YouTube', 'Facebook']}
               href="/social-media"
@@ -137,7 +141,7 @@ export default function HomePage() {
             <ProductCard
               title="Gaming Top Up"
               description="Diamond, UC, voucher game untuk semua game populer"
-              icon="🎮"
+              icon={<Gamepad2 className="w-8 h-8" />}
               price="Mulai dari Rp 10.000"
               features={['Mobile Legends', 'Free Fire', 'PUBG', 'Genshin Impact']}
               href="/gaming"
@@ -145,7 +149,7 @@ export default function HomePage() {
             <ProductCard
               title="PPOB"
               description="Pembayaran tagihan dan pulsa dengan sistem terintegrasi"
-              icon="💳"
+              icon={<CreditCard className="w-8 h-8" />}
               price="Sesuai nominal"
               features={['Pulsa', 'Token Listrik', 'BPJS', 'Tagihan']}
               href="/ppob"
@@ -153,7 +157,7 @@ export default function HomePage() {
             <ProductCard
               title="Premium Accounts"
               description="Account premium Netflix, Spotify, dan layanan digital lainnya"
-              icon="👑"
+              icon={<Crown className="w-8 h-8" />}
               price="Mulai dari Rp 15.000"
               features={['Netflix', 'Spotify', 'YouTube Premium', 'AI Tools']}
               href="/premium"

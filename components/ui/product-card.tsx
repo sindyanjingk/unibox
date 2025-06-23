@@ -1,4 +1,3 @@
-
 'use client'
 
 import { motion } from 'framer-motion';
@@ -11,7 +10,7 @@ interface ProductCardProps {
   originalPrice?: string;
   description: string;
   admin?: string;
-  icon?: LucideIcon;
+  icon?: React.ReactNode;
   gradient?: string;
   index?: number;
 }
@@ -44,25 +43,25 @@ export default function ProductCard({
     >
       {Icon && (
         <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${gradient} flex items-center justify-center mb-4`}>
-          <Icon className="w-6 h-6 text-white" />
+          {Icon}
         </div>
       )}
-      
+
       <h3 className="text-lg font-semibold text-white mb-2">{name}</h3>
-      
+
       <div className="flex items-center space-x-2 mb-2">
         <span className="text-green-400 font-bold">{price}</span>
         {originalPrice && (
           <span className="text-gray-400 line-through text-sm">{originalPrice}</span>
         )}
       </div>
-      
+
       <p className="text-gray-300 text-sm mb-3">{description}</p>
-      
+
       {admin && (
         <p className="text-purple-400 text-xs mb-4">{admin}</p>
       )}
-      
+
       <Button 
         size="sm" 
         className={`w-full bg-gradient-to-r ${gradient} hover:opacity-90`}
