@@ -1,4 +1,3 @@
-
 'use client'
 
 import { motion } from 'framer-motion';
@@ -207,7 +206,7 @@ export default function ResellerWebsite({ params }: { params: { slug: string } }
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div 
               className="text-center lg:text-right"
               initial={{ opacity: 0, x: 40 }}
@@ -307,7 +306,7 @@ export default function ResellerWebsite({ params }: { params: { slug: string } }
                 <div className="p-6">
                   <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
                   <p className="text-gray-600 text-sm mb-3">{product.description}</p>
-                  
+
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-1">
                       <div className="flex items-center">
@@ -368,7 +367,7 @@ export default function ResellerWebsite({ params }: { params: { slug: string } }
               <p className="text-gray-600 mb-6">
                 Tim customer service kami siap membantu Anda 24/7. Jangan ragu untuk menghubungi kami jika ada pertanyaan.
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-center space-x-3 p-4 bg-white rounded-lg">
                   <Phone className="w-8 h-8 text-green-500" />
