@@ -105,6 +105,25 @@ const premiumProducts = [
       { name: 'Kaspersky Total Security', price: 'Rp 45.000', originalPrice: 'Rp 89.000', description: '1 bulan protection', features: ['Multi-device', 'VPN included', 'Password manager'] },
       { name: 'Norton 360 Premium', price: 'Rp 85.000', originalPrice: 'Rp 179.000', description: '1 bulan subscription', features: ['Dark web monitoring', 'VPN', 'Cloud backup'] }
     ]
+  },
+  {
+    category: 'AI & Automation',
+    icon: Zap,
+    color: 'from-indigo-500 to-purple-600',
+    products: [
+      { name: 'ChatGPT Plus 1 Bulan', price: 'Rp 125.000', originalPrice: 'Rp 289.000', description: 'GPT-4 access unlimited', features: ['GPT-4 Turbo', 'DALL-E 3', 'Code Interpreter', 'No rate limits'] },
+      { name: 'Claude Pro 1 Bulan', price: 'Rp 115.000', originalPrice: 'Rp 269.000', description: 'Anthropic Claude Pro', features: ['Claude 3 Opus', '5x usage limits', 'Priority bandwidth', 'Early access'] },
+      { name: 'Midjourney Premium', price: 'Rp 185.000', originalPrice: 'Rp 430.000', description: '1 bulan unlimited', features: ['Unlimited generations', 'Fast GPU time', 'Stealth mode', 'Commercial usage'] },
+      { name: 'Perplexity Pro 1 Bulan', price: 'Rp 95.000', originalPrice: 'Rp 269.000', description: 'AI search premium', features: ['GPT-4 access', 'Claude 3', 'Unlimited copilot', 'File upload'] },
+      { name: 'Jasper AI 1 Bulan', price: 'Rp 225.000', originalPrice: 'Rp 520.000', description: 'AI copywriting tool', features: ['50K words/month', 'All templates', 'Brand voice', 'Plagiarism checker'] },
+      { name: 'Copy.ai Pro 1 Bulan', price: 'Rp 165.000', originalPrice: 'Rp 389.000', description: 'AI content generator', features: ['Unlimited words', 'All tools', 'Brand voice', 'Team collaboration'] },
+      { name: 'Gamma AI Premium', price: 'Rp 75.000', originalPrice: 'Rp 149.000', description: '1 bulan unlimited', features: ['Unlimited presentations', 'AI design', 'Export options', 'Custom branding'] },
+      { name: 'Notion AI 1 Bulan', price: 'Rp 55.000', originalPrice: 'Rp 120.000', description: 'AI workspace assistant', features: ['AI writing assistant', 'Unlimited requests', 'Page auto-fill', 'AI Q&A'] },
+      { name: 'GitHub Copilot', price: 'Rp 65.000', originalPrice: 'Rp 139.000', description: '1 bulan AI coding', features: ['AI code suggestions', 'Multiple languages', 'Real-time assistance', 'Context aware'] },
+      { name: 'RunwayML Premium', price: 'Rp 95.000', originalPrice: 'Rp 189.000', description: 'AI video generation', features: ['Gen-2 video AI', 'AI Magic Tools', 'Green screen', 'Export 4K'] },
+      { name: 'Luma AI Premium', price: 'Rp 125.000', originalPrice: 'Rp 239.000', description: 'AI video creation', features: ['Dream Machine', 'Text to video', 'Image to video', 'HD quality'] },
+      { name: 'ElevenLabs Premium', price: 'Rp 135.000', originalPrice: 'Rp 289.000', description: 'AI voice generation', features: ['Voice cloning', 'Speech synthesis', 'Multiple languages', 'Commercial license'] }
+    ]
   }
 ];
 
