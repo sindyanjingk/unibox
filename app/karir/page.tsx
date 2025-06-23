@@ -214,34 +214,7 @@ const benefits = [
 
 export default function Karir() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              UniBox
-            </Link>
-            <div className="hidden md:flex space-x-8">
-              <Link href="/features" className="text-gray-300 hover:text-white transition-colors">
-                Fitur
-              </Link>
-              <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
-                Harga
-              </Link>
-              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-                Tentang
-              </Link>
-              <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                Kontak
-              </Link>
-              <Link href="/blog" className="text-gray-300 hover:text-white transition-colors">
-                Blog
-              </Link>
-              <Link href="/karir" className="text-purple-400 font-semibold">
-                Karir
-              </Link>
-            </div>
+    <PageLayout currentPage="karir">
             <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500">
               <Link href="/register">Mulai Sekarang</Link>
             </Button>
