@@ -172,6 +172,17 @@ export default function ResellerWebsite({ params }: { params: { slug: string } }
                   </span>
                 )}
               </button>
+              <Link href={`/reseller/${params.slug}/login`}>
+                <Button variant="outline" className="border-purple-200 text-purple-600">
+                  <User className="w-4 h-4 mr-2" />
+                  Masuk
+                </Button>
+              </Link>
+              <Link href={`/reseller/${params.slug}/register`}>
+                <Button className="bg-purple-500 hover:bg-purple-600">
+                  Daftar
+                </Button>
+              </Link>
               <Button className="bg-green-500 hover:bg-green-600">
                 <Phone className="w-4 h-4 mr-2" />
                 WhatsApp
