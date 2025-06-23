@@ -1,27 +1,40 @@
 
 'use client'
 
+import { ReactNode } from 'react';
 import Navigation from './navigation';
 import Footer from './footer';
 
 interface PageLayoutProps {
-  children: React.ReactNode;
-  currentPage?: string;
-  showRegisterButton?: boolean;
+  children: ReactNode;
+  variant?: 'main' | 'reseller';
+  resellerSlug?: string;
+  showNavigation?: boolean;
+  showFooter?: boolean;
+  className?: string;
 }
 
 export default function PageLayout({ 
   children, 
-  currentPage, 
-  showRegisterButton = true 
+  variant = 'main', 
+  resellerSlug,
+  showNavigation = true,
+  showFooter = true,
+  className = ''
 }: PageLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Navigation currentPage={currentPage} showRegisterButton={showRegisterButton} />
-      <div className="pt-20">
+    <div className="min-h-screen flex flex-col">
+      {showNavigation && (
+        <Navigation variant={variant} resellerSlug={resellerSlug} />
+      )}
+      
+      <main className={`flex-1 ${className}`}>
         {children}
-      </div>
-      <Footer />
+      </main>
+      
+      {showFooter && (
+        <Footer variant={variant} resellerSlug={resellerSlug} />
+      )}
     </div>
   );
 }

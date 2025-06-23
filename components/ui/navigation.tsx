@@ -1,135 +1,209 @@
 
 'use client'
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { LogOut, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { 
+  Menu, 
+  X, 
+  ChevronDown,
+  Smartphone,
+  Gamepad2,
+  CreditCard,
+  Crown
+} from 'lucide-react';
 
 interface NavigationProps {
-  currentPage?: string;
-  showRegisterButton?: boolean;
+  variant?: 'main' | 'reseller';
+  resellerSlug?: string;
 }
 
-export default function Navigation({ currentPage, showRegisterButton = true }: NavigationProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('');
+export default function Navigation({ variant = 'main', resellerSlug }: NavigationProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check if user is logged in (from localStorage for demo purposes)
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setIsLoggedIn(true);
-      setUserName(user.name || user.fullName || 'User');
-    }
-  }, []);
+  const isMainSite = variant === 'main';
+  const baseUrl = isMainSite ? '' : `/reseller/${resellerSlug}`;
+  const logoText = isMainSite ? 'UniBox' : `${resellerSlug}.unibox.id`;
 
-  const handleLogout = () => {
-    localStorage.removeItem('userData');
-    setIsLoggedIn(false);
-    setUserName('');
-    window.location.href = '/';
+  const productCategories = [
+    { name: 'Social Media', href: `${baseUrl}/social-media`, icon: Smartphone },
+    { name: 'Gaming', href: `${baseUrl}/gaming`, icon: Gamepad2 },
+    { name: 'PPOB', href: `${baseUrl}/ppob`, icon: CreditCard },
+    { name: 'Premium Accounts', href: `${baseUrl}/premium`, icon: Crown }
+  ];
+
+  const mainMenuItems = isMainSite ? [
+    { name: 'Features', href: '/features' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'About', href: '/about' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Contact', href: '/contact' }
+  ] : [
+    { name: 'Products', href: `${baseUrl}/products` },
+    { name: 'About', href: `${baseUrl}#about` },
+    { name: 'Contact', href: `${baseUrl}#contact` }
+  ];
+
+  const toggleDropdown = (dropdown: string) => {
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
+    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <motion.div 
-            className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Link href="/">UniBox</Link>
-          </motion.div>
-          
-          <motion.div 
-            className="hidden md:flex space-x-8"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
             <Link 
-              href="/features" 
-              className={`transition-colors ${currentPage === 'features' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
+              href={isMainSite ? '/' : `${baseUrl}`} 
+              className="text-xl font-bold text-purple-600 hover:text-purple-700 transition-colors"
             >
-              Fitur
+              {logoText}
             </Link>
-            <Link 
-              href="/pricing" 
-              className={`transition-colors ${currentPage === 'pricing' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
-            >
-              Harga
-            </Link>
-            <Link 
-              href="/about"
-              className={`transition-colors ${currentPage === 'about' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
-            >
-              Tentang
-            </Link>
-            <Link 
-              href="/contact" 
-              className={`transition-colors ${currentPage === 'contact' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
-            >
-              Kontak
-            </Link>
-            <Link 
-              href="/blog" 
-              className={`transition-colors ${currentPage === 'blog' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
-            >
-              Blog
-            </Link>
-            <Link 
-              href="/karir" 
-              className={`transition-colors ${currentPage === 'karir' ? 'text-purple-400 font-semibold' : 'text-gray-300 hover:text-white'}`}
-            >
-              Karir
-            </Link>
-          </motion.div>
-          
-          <motion.div
-            className="flex items-center space-x-4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/dashboard"
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  <span>{userName}</span>
-                </Link>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  size="sm"
-                  className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Button variant="outline" asChild className="border-purple-400 text-purple-400">
-                  <Link href="/login">Masuk</Link>
-                </Button>
-                {showRegisterButton && (
-                  <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                    <Link href="/register">Mulai Sekarang</Link>
-                  </Button>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-8">
+            {/* Products Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('products')}
+                className="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition-colors"
+              >
+                <span>Products</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              <AnimatePresence>
+                {activeDropdown === 'products' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 z-50"
+                  >
+                    {productCategories.map((category) => (
+                      <Link
+                        key={category.name}
+                        href={category.href}
+                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        <category.icon className="w-5 h-5" />
+                        <span>{category.name}</span>
+                      </Link>
+                    ))}
+                  </motion.div>
                 )}
-              </div>
-            )}
-          </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Main Menu Items */}
+            {mainMenuItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-gray-700 hover:text-purple-600 transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href={`${baseUrl}/login`}>
+              <Button variant="outline" size="sm">
+                Masuk
+              </Button>
+            </Link>
+            <Link href={`${baseUrl}/register`}>
+              <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                Daftar
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-700 hover:text-purple-600 transition-colors"
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t bg-white"
+            >
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                {/* Mobile Products */}
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-900 px-3 py-2">Products</div>
+                  {productCategories.map((category) => (
+                    <Link
+                      key={category.name}
+                      href={category.href}
+                      className="flex items-center space-x-3 px-6 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <category.icon className="w-4 h-4" />
+                      <span>{category.name}</span>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Mobile Main Menu */}
+                <div className="border-t pt-2">
+                  {mainMenuItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="block px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Mobile Auth Buttons */}
+                <div className="border-t pt-4 px-3 space-y-2">
+                  <Link href={`${baseUrl}/login`} onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Masuk
+                    </Button>
+                  </Link>
+                  <Link href={`${baseUrl}/register`} onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Daftar
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Overlay for dropdown */}
+      {activeDropdown && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => setActiveDropdown(null)}
+        />
+      )}
     </nav>
   );
 }

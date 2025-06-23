@@ -3,10 +3,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hostname = request.headers.get('host') || '';
+  const { pathname, hostname } = request.nextUrl;
   
-  // Skip middleware for API routes, static files, and internal Next.js routes
+  // Skip middleware for API routes, static files, and Next.js internals
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
@@ -16,34 +15,63 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Extract subdomain from hostname
-  const subdomain = hostname.split('.')[0];
-  
-  // List of main domain routes that should not be treated as subdomains
+  // Main routes that should bypass subdomain logic
   const mainRoutes = [
-    'www',
-    'localhost',
-    'localhost:3000',
-    '127.0.0.1',
-    '127.0.0.1:3000',
-    // Add your main domain here when deployed
+    '/',
+    '/features',
+    '/pricing',
+    '/about',
+    '/blog',
+    '/contact',
+    '/login',
+    '/register',
+    '/dashboard',
+    '/help',
+    '/faq',
+    '/social-media',
+    '/gaming',
+    '/ppob',
+    '/premium',
+    '/karir',
+    '/demo'
   ];
 
-  // Check if this is a subdomain (reseller site)
-  const isSubdomain = !mainRoutes.some(route => 
-    hostname.startsWith(route) || hostname === route
-  ) && subdomain && subdomain !== hostname;
+  // Development/localhost handling
+  const isLocalhost = hostname === 'localhost' || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+  
+  if (isLocalhost) {
+    // For localhost, check if it's a direct reseller path
+    if (pathname.startsWith('/reseller/')) {
+      return NextResponse.next();
+    }
+    
+    // For main routes on localhost, continue normally
+    if (mainRoutes.includes(pathname) || pathname.startsWith('/dashboard')) {
+      return NextResponse.next();
+    }
+    
+    return NextResponse.next();
+  }
 
-  // If it's a subdomain, rewrite to reseller page
-  if (isSubdomain) {
-    // Rewrite to the reseller page with the subdomain as slug
+  // Production subdomain handling
+  const subdomain = hostname.split('.')[0];
+  const mainDomain = process.env.MAIN_DOMAIN || 'unibox.id';
+  
+  // If it's the main domain (no subdomain or www)
+  if (hostname === mainDomain || hostname === `www.${mainDomain}` || subdomain === 'www') {
+    if (mainRoutes.includes(pathname) || pathname.startsWith('/dashboard')) {
+      return NextResponse.next();
+    }
+  }
+  
+  // If it's a subdomain and not a main route
+  if (subdomain && subdomain !== 'www' && !hostname.includes(mainDomain)) {
+    // Rewrite to reseller route
     const url = request.nextUrl.clone();
     url.pathname = `/reseller/${subdomain}${pathname}`;
-    
     return NextResponse.rewrite(url);
   }
 
-  // For main domain, continue normal routing
   return NextResponse.next();
 }
 
