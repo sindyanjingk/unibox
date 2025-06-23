@@ -1,4 +1,3 @@
-
 'use client'
 
 import { motion } from 'framer-motion';
@@ -18,7 +17,9 @@ import {
   X,
   Search,
   Bell,
-  Eye
+  Eye,
+  Store,
+  ShoppingCart
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -147,8 +148,15 @@ export default function UserDashboard({ params }: { params: { slug: string } }) 
                   <span>Profil</span>
                 </button>
                 <Link
+                  href={`/reseller/${params.slug}/user-dashboard/order`}
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-600 hover:bg-gray-100"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Buat Pesanan</span>
+                </Link>
+                <Link
                   href={`/reseller/${params.slug}`}
-                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-600 hover:bg-gray-100"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Keluar</span>
@@ -198,6 +206,41 @@ export default function UserDashboard({ params }: { params: { slug: string } }) 
                     </div>
                   </div>
                 </div>
+
+                {/* Quick Actions */}
+              <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Link href={`/reseller/${params.slug}/user-dashboard/order`} className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                    <ShoppingCart className="w-8 h-8 text-purple-600" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">Buat Pesanan</div>
+                      <div className="text-sm text-gray-600">Order produk untuk customer</div>
+                    </div>
+                  </Link>
+                  <button className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <Package className="w-8 h-8 text-blue-600" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">Lihat Katalog</div>
+                      <div className="text-sm text-gray-600">Browse produk tersedia</div>
+                    </div>
+                  </button>
+                  <button className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    <Settings className="w-8 h-8 text-green-600" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">Pengaturan</div>
+                      <div className="text-sm text-gray-600">Kelola profil akun</div>
+                    </div>
+                  </button>
+                  <button className="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                    <TrendingUp className="w-8 h-8 text-orange-600" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">Statistik</div>
+                      <div className="text-sm text-gray-600">Lihat aktivitas</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
 
                 {/* Recent Orders */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
