@@ -11,7 +11,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico') ||
-    pathname.includes('.')
+    pathname.includes('.') ||
+    pathname.startsWith('/reseller/') // Skip if already rewritten
   ) {
     return NextResponse.next();
   }
@@ -26,17 +27,15 @@ export function middleware(request: NextRequest) {
     'localhost:3000',
     '127.0.0.1',
     '127.0.0.1:3000',
-    // Add your main domain here when deployed
   ];
 
   // Check if this is a subdomain (reseller site)
   const isSubdomain = !mainRoutes.some(route => 
     hostname.startsWith(route) || hostname === route
-  ) && subdomain && subdomain !== hostname;
+  ) && subdomain && subdomain !== hostname && !hostname.includes('localhost');
 
   // If it's a subdomain, rewrite to reseller page
   if (isSubdomain) {
-    // Rewrite to the reseller page with the subdomain as slug
     const url = request.nextUrl.clone();
     url.pathname = `/reseller/${subdomain}${pathname}`;
     
@@ -49,13 +48,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
