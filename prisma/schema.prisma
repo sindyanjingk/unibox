@@ -1,0 +1,282 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core Platform Models
+model Platform {
+  id          String   @id @default(cuid())
+  name        String   @default("UniBox")
+  domain      String   @default("unibox.id")
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  admins      PlatformAdmin[]
+  categories  Category[]
+  products    Product[]
+  tenants     Tenant[]
+  
+  @@map("platforms")
+}
+
+model PlatformAdmin {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        String   @default("admin")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  platformId  String
+  platform    Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  
+  @@map("platform_admins")
+}
+
+// Multitenancy - Each Reseller is a Tenant
+model Tenant {
+  id          String   @id @default(cuid())
+  subdomain   String   @unique
+  name        String
+  domain      String?  // custom domain
+  logo        String?
+  favicon     String?
+  colors      Json?    // theme colors
+  settings    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  platformId  String
+  platform    Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  owner       TenantUser @relation("TenantOwner")
+  users       TenantUser[]
+  customers   Customer[]
+  orders      Order[]
+  transactions Transaction[]
+  tenantProducts TenantProduct[]
+  
+  @@map("tenants")
+}
+
+model TenantUser {
+  id          String   @id @default(cuid())
+  email       String
+  password    String
+  name        String
+  phone       String?
+  role        String   @default("reseller") // reseller, admin
+  isOwner     Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  balance     Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ownedTenant Tenant?  @relation("TenantOwner", fields: [ownedTenantId], references: [id])
+  ownedTenantId String? @unique
+  
+  @@unique([email, tenantId])
+  @@map("tenant_users")
+}
+
+// Customer Management
+model Customer {
+  id          String   @id @default(cuid())
+  email       String
+  password    String?
+  name        String
+  phone       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  
+  @@unique([email, tenantId])
+  @@map("customers")
+}
+
+// Product Management
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  icon        String?
+  description String?
+  isActive    Boolean  @default(true)
+  sort        Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  platformId  String
+  platform    Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  products    Product[]
+  
+  @@unique([slug, platformId])
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  image       String?
+  price       Decimal  @db.Decimal(15, 2)
+  cost        Decimal  @db.Decimal(15, 2) // harga modal
+  type        String   // social_media, gaming, ppob, premium_account
+  provider    String?  // e.g., "instagram", "mobile_legends", "pln"
+  fields      Json?    // dynamic fields for different product types
+  isActive    Boolean  @default(true)
+  sort        Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  platformId  String
+  platform    Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tenantProducts TenantProduct[]
+  orderItems  OrderItem[]
+  
+  @@unique([slug, platformId])
+  @@map("products")
+}
+
+model TenantProduct {
+  id          String   @id @default(cuid())
+  price       Decimal  @db.Decimal(15, 2) // harga jual reseller
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@unique([tenantId, productId])
+  @@map("tenant_products")
+}
+
+// Order & Transaction Management
+model Order {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  status      String   @default("pending") // pending, processing, completed, failed, cancelled
+  totalAmount Decimal  @db.Decimal(15, 2)
+  fees        Decimal  @default(0) @db.Decimal(15, 2)
+  notes       String?
+  customerData Json?   // data customer seperti nomor HP, email, dll
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items       OrderItem[]
+  transactions Transaction[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  quantity    Int      @default(1)
+  price       Decimal  @db.Decimal(15, 2)
+  total       Decimal  @db.Decimal(15, 2)
+  productData Json?    // snapshot produk saat order
+  notes       String?
+  status      String   @default("pending") // pending, processing, completed, failed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@map("order_items")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  transactionId String @unique
+  type        String   // payment, refund, fee
+  method      String   // manual, bank_transfer, ewallet, va
+  amount      Decimal  @db.Decimal(15, 2)
+  status      String   @default("pending") // pending, success, failed
+  reference   String?  // referensi dari payment gateway
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  @@map("transactions")
+}
+
+// Balance & Saldo Management
+model BalanceHistory {
+  id          String   @id @default(cuid())
+  type        String   // credit, debit
+  amount      Decimal  @db.Decimal(15, 2)
+  balance     Decimal  @db.Decimal(15, 2) // saldo setelah transaksi
+  description String
+  reference   String?  // referensi ke order/transaction
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  userId      String
+  user        TenantUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("balance_histories")
+}
+
+// Settings & Configuration
+model Setting {
+  id          String   @id @default(cuid())
+  key         String
+  value       Json
+  type        String   @default("tenant") // platform, tenant
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@unique([key, tenantId])
+  @@map("settings")
+}
