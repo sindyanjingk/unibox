@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react';
@@ -6,26 +5,21 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
-  BarChart3, 
-  Users, 
-  DollarSign, 
-  ShoppingCart,
-  TrendingUp,
-  Eye,
-  Settings,
-  LogOut,
-  Plus,
-  Globe,
-  History,
+  BarChart3,
   Package,
+  Users,
+  Settings,
+  History,
   Upload,
-  Menu,
   X,
   ChevronRight,
-  Store,
-  ExternalLink
+  Plus,
+  Globe,
+  TrendingUp,
+  ShoppingCart
 } from 'lucide-react';
 import PageLayout from '@/components/ui/page-layout';
+import { useRouter } from 'next/navigation';
 
 interface Website {
   id: string;
@@ -46,14 +40,20 @@ export default function DashboardPage() {
   const [websites, setWebsites] = useState<Website[]>([]);
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const [newWebsite, setNewWebsite] = useState({ name: '', subdomain: '', description: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const router = useRouter();
 
   const handleLogout = () => {
     localStorage.removeItem('userData');
     window.location.href = '/';
   };
 
-  const handleAddWebsite = () => {
+  const handleAddWebsite = async () => {
     if (newWebsite.name && newWebsite.subdomain) {
+      setIsCreating(true);
+      // Simulate API call or async task
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const website: Website = {
         id: Date.now().toString(),
         name: newWebsite.name,
@@ -64,10 +64,11 @@ export default function DashboardPage() {
         totalSales: 0,
         createdAt: new Date().toISOString().split('T')[0]
       };
-      
+
       setWebsites([...websites, website]);
       setNewWebsite({ name: '', subdomain: '', description: '' });
       setShowAddWebsite(false);
+      setIsCreating(false);
     }
   };
 
@@ -356,7 +357,7 @@ export default function DashboardPage() {
             transition={{ duration: 0.3 }}
           >
             <h3 className="text-xl font-bold text-white mb-6">Tambah Website Baru</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -411,12 +412,22 @@ export default function DashboardPage() {
               >
                 Batal
               </Button>
-              <Button
+              <Button 
                 onClick={handleAddWebsite}
-                className="flex-1 bg-purple-500 hover:bg-purple-600"
-                disabled={!newWebsite.name || !newWebsite.subdomain}
+                disabled={isCreating}
+                className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:opacity-50"
               >
-                Tambah Website
+                {isCreating ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Membuat...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tambah Website
+                  </>
+                )}
               </Button>
             </div>
           </motion.div>
