@@ -1,56 +1,29 @@
+// types/next-auth.d.ts
+import NextAuth from "next-auth"
 
-import NextAuth from 'next-auth'
-
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      name?: string
       email: string
-      name: string
       role: string
-      tenantId?: string
-      tenant?: {
-        id: string
-        name: string
-        slug: string
-        domain?: string
-        logoUrl?: string
-        primaryColor: string
-        isActive: boolean
-      }
+      tenantId?: string | null
     }
   }
 
   interface User {
     id: string
     email: string
-    name: string
+    name?: string
     role: string
-    tenantId?: string
-    tenant?: {
-      id: string
-      name: string
-      slug: string
-      domain?: string
-      logoUrl?: string
-      primaryColor: string
-      isActive: boolean
-    }
+    tenantId?: string | null
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
-    role: string
-    tenantId?: string
-    tenant?: {
-      id: string
-      name: string
-      slug: string
-      domain?: string
-      logoUrl?: string
-      primaryColor: string
-      isActive: boolean
-    }
+    role?: string
+    tenantId?: string | null
   }
 }

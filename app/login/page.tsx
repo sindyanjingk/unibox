@@ -1,62 +1,51 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Mail, Lock, Globe } from 'lucide-react'
 import PageLayout from '@/components/ui/page-layout'
 
+type LoginForm = {
+  email: string
+  password: string
+}
+
 export default function Login() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [loginType, setLoginType] = useState<'admin' | 'tenant'>('admin')
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    tenantSlug: ''
-  })
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<LoginForm>()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: LoginForm) => {
     setLoading(true)
     setError('')
 
     try {
       const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        tenantSlug: loginType === 'tenant' ? formData.tenantSlug : '',
+        email: data.email,
+        password: data.password,
         redirect: false
       })
 
       if (result?.error) {
-        setError('Invalid credentials')
+        setError('Email atau password salah')
       } else {
-        // Get updated session
-        const session = await getSession()
-
-        if (session?.user?.role === 'admin') {
-          router.push('/dashboard')
-        } else if (session?.user?.tenantSlug) {
-          router.push(`/reseller/${session.user.tenantSlug}/admin`)
-        } else {
-          router.push('/dashboard')
-        }
+        router.push(`/dashboard/site`)
       }
-    } catch (error) {
-      setError('Login failed')
+    } catch (err) {
+      setError('Login gagal, coba lagi')
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   return (
@@ -65,108 +54,70 @@ export default function Login() {
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white mb-2">Masuk ke Akun</h2>
-            <p className="text-gray-300">Kelola bisnis digital Anda</p>
+            <p className="text-gray-300">Kelola website toko Anda</p>
           </div>
 
-          {/* Login Type Toggle */}
-          <div className="bg-white/10 p-1 rounded-lg backdrop-blur-sm">
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                type="button"
-                onClick={() => setLoginType('admin')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  loginType === 'admin'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-white hover:bg-white/10'
-                }`}
-              >
-                Admin UniBox
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginType('tenant')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  loginType === 'tenant'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-white hover:bg-white/10'
-                }`}
-              >
-                Pemilik Toko
-              </button>
-            </div>
-          </div>
-
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
-              {loginType === 'tenant' && (
-                <div>
-                  <label htmlFor="tenantSlug" className="sr-only">Website URL</label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      id="tenantSlug"
-                      name="tenantSlug"
-                      type="text"
-                      required={loginType === 'tenant'}
-                      value={formData.tenantSlug}
-                      onChange={handleInputChange}
-                      className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="URL Website (contoh: tokobarokah)"
-                    />
-                  </div>
-                  {formData.tenantSlug && (
-                    <p className="mt-1 text-sm text-gray-300">
-                      Login ke: <span className="text-purple-300">{formData.tenantSlug}.unibox.id</span>
-                    </p>
-                  )}
-                </div>
-              )}
 
+              {/* Email */}
               <div>
-                <label htmlFor="email" className="sr-only">Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
+                    {...register('email', {
+                      required: 'Email wajib diisi',
+                      pattern: {
+                        value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                        message: 'Format email tidak valid'
+                      }
+                    })}
                     id="email"
-                    name="email"
                     type="email"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Email Address"
+                    className="pl-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Email"
                   />
                 </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
 
+              {/* Password */}
               <div>
-                <label htmlFor="password" className="sr-only">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
+                    {...register('password', {
+                      required: 'Password wajib diisi',
+                      minLength: {
+                        value: 6,
+                        message: 'Password minimal 6 karakter'
+                      }
+                    })}
                     id="password"
-                    name="password"
                     type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="pl-10 pr-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="pl-10 pr-10 w-full px-3 py-3 border border-gray-600 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     placeholder="Password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                )}
               </div>
             </div>
 
+            {/* Server error */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                <p className="text-red-300 text-sm">{error}</p>
+              <div className="bg-red-100 border border-red-300 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
 
@@ -179,9 +130,9 @@ export default function Login() {
             </button>
 
             <div className="text-center">
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-400 text-sm">
                 Belum punya akun?{' '}
-                <Link href="/register" className="text-purple-400 hover:text-purple-300 font-medium">
+                <Link href="/register" className="text-purple-500 hover:text-purple-400 font-medium">
                   Daftar disini
                 </Link>
               </p>

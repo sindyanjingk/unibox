@@ -1,7 +1,3 @@
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,39 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Admin model untuk main site admin
-model Admin {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String   // hashed password
-  role      String   @default("admin")
-  isActive  Boolean  @default(true)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@map("admins")
+model User {
+  id              String    @id @default(cuid())
+  email           String
+  fullName        String
+  phone           String?
+  password        String
+  isActive        Boolean   @default(true)
+  emailVerified   Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+  role            String    @default("user") // "admin", "owner", "user"
+
+  ownedTenants     Tenant[] @relation("OwnedTenants")         // sebagai pemilik tenant
+  memberOfTenants  Tenant[] @relation("TenantUsers")          // sebagai user dalam tenant
+
+  accounts         Account[]
+  sessions         Session[]
+  orders           Order[]
+
+  @@unique([email])
+  @@map("users")
 }
 
-// NextAuth.js required models
+model Tenant {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  name           String
+  description    String?
+  logo           String?
+  email          String?
+  phone          String?
+  whatsapp       String?
+  address        String?
+  isActive       Boolean    @default(true)
+  verified       Boolean    @default(false)
+  primaryColor   String     @default("#6366f1")
+  secondaryColor String     @default("#8b5cf6")
+  joinedAt       DateTime   @default(now())
+  totalOrders    Int        @default(0)
+  totalRevenue   Decimal    @default(0.00) @db.Decimal(12, 2)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  ownerId        String
+  owner          User       @relation("OwnedTenants", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  users          User[]     @relation("TenantUsers")
+
+  categories     Category[]
+  orders         Order[]
+  products       Product[]
+
+  @@map("tenants")
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -52,8 +88,10 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
@@ -66,224 +104,107 @@ model VerificationToken {
   @@map("verificationtokens")
 }
 
-// Tenant model untuk setiap reseller
-model Tenant {
-  id          String   @id @default(cuid())
-  slug        String   @unique // subdomain slug
-  name        String   // nama toko
-  description String?
-  logo        String?
-  
-  // Contact info
-  email       String?
-  phone       String?
-  whatsapp    String?
-  address     String?
-  
-  // Store settings
-  isActive    Boolean  @default(true)
-  verified    Boolean  @default(false)
-  
-  // Branding
-  primaryColor    String @default("#6366f1")
-  secondaryColor  String @default("#8b5cf6")
-  
-  // Business info
-  joinedAt    DateTime @default(now())
-  totalOrders Int      @default(0)
-  totalRevenue Decimal @default(0) @db.Decimal(12,2)
-  
-  // Relations
-  users       User[]
-  products    Product[]
-  orders      Order[]
-  categories  Category[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("tenants")
-}
-
-// User model untuk customer di setiap tenant
-model User {
-  id          String   @id @default(cuid())
-  email       String
-  fullName    String
-  phone       String?
-  password    String   // hashed password
-  
-  // User status
-  isActive    Boolean  @default(true)
-  emailVerified Boolean @default(false)
-  
-  // Tenant relation
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  // NextAuth relations
-  accounts      Account[]
-  sessions      Session[]
-  
-  // Relations
-  orders      Order[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Unique constraint per tenant
-  @@unique([email, tenantId])
-  @@map("users")
-}
-
-// Category model untuk mengorganisir produk
 model Category {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   slug        String
   description String?
   icon        String?
-  
-  // Tenant relation
   tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  // Relations
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   products    Product[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Unique constraint per tenant
+
   @@unique([slug, tenantId])
+  @@index([tenantId])
   @@map("categories")
 }
 
-// Product model untuk produk digital
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String
-  description String?
-  image       String?
-  
-  // Pricing
-  price       Decimal  @db.Decimal(10,2)
-  originalPrice Decimal? @db.Decimal(10,2)
-  cost        Decimal  @db.Decimal(10,2) // harga modal
-  
-  // Product info
-  sku         String?
-  isActive    Boolean  @default(true)
-  isDigital   Boolean  @default(true)
-  
-  // Stats
-  sold        Int      @default(0)
-  rating      Decimal  @default(0) @db.Decimal(2,1)
-  reviewCount Int      @default(0)
-  
-  // Provider info (untuk integrasi API)
-  provider    String?  // digiflazz, atlantic-pedia, dll
-  providerCode String? // kode produk di provider
-  
-  // Category relation
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
-  
-  // Tenant relation
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  // Relations
-  orderItems  OrderItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Unique constraint per tenant
+  id            String    @id @default(cuid())
+  name          String
+  slug          String
+  description   String?
+  image         String?
+  price         Decimal   @db.Decimal(10, 2)
+  originalPrice Decimal?  @db.Decimal(10, 2)
+  cost          Decimal   @db.Decimal(10, 2)
+  sku           String?
+  isActive      Boolean   @default(true)
+  isDigital     Boolean   @default(true)
+  sold          Int       @default(0)
+  rating        Decimal   @default(0.0) @db.Decimal(2, 1)
+  reviewCount   Int       @default(0)
+  provider      String?
+  providerCode  String?
+  categoryId    String
+  tenantId      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+
+  category      Category  @relation(fields: [categoryId], references: [id])
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+
   @@unique([slug, tenantId])
+  @@index([tenantId])
   @@map("products")
 }
 
-// Order model untuk transaksi
 model Order {
-  id          String   @id @default(cuid())
-  orderNumber String   @unique // INV-20241215-001
-  
-  // Customer info
-  customerName  String
-  customerEmail String
-  customerPhone String?
-  
-  // Order amounts
-  subtotal    Decimal  @db.Decimal(10,2)
-  fee         Decimal  @default(0) @db.Decimal(10,2)
-  total       Decimal  @db.Decimal(10,2)
-  profit      Decimal  @default(0) @db.Decimal(10,2)
-  
-  // Order status
-  status      OrderStatus @default(PENDING)
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentMethod String?
-  
-  // Provider info
-  providerOrderId String? // ID order dari provider
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  subtotal        Decimal       @db.Decimal(10, 2)
+  fee             Decimal       @default(0.00) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  profit          Decimal       @default(0.00) @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  providerOrderId String?
   providerStatus  String?
-  
-  // Notes
-  notes       String?
-  adminNotes  String?
-  
-  // User relation (optional, jika customer login)
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  
-  // Tenant relation
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  // Relations
-  orderItems  OrderItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  notes           String?
+  adminNotes      String?
+  userId          String?
+  tenantId        String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now())
+
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user            User?         @relation(fields: [userId], references: [id])
+  orderItems      OrderItem[]
+
+  @@index([tenantId])
   @@map("orders")
 }
 
-// OrderItem model untuk detail item dalam order
 model OrderItem {
-  id          String   @id @default(cuid())
-  
-  // Product info (snapshot saat order)
+  id          String          @id @default(cuid())
   productName String
   productSku  String?
-  price       Decimal  @db.Decimal(10,2)
-  cost        Decimal  @db.Decimal(10,2)
-  quantity    Int      @default(1)
-  
-  // Target info (untuk produk digital)
-  targetId    String?  // user ID, nomor HP, dll
-  targetData  String?  // data tambahan dalam JSON format
-  
-  // Status
+  price       Decimal         @db.Decimal(10, 2)
+  cost        Decimal         @db.Decimal(10, 2)
+  quantity    Int             @default(1)
+  targetId    String?
+  targetData  String?
   status      OrderItemStatus @default(PENDING)
-  
-  // Product relation
   productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  
-  // Order relation
   orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now())
+
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product         @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
   @@map("order_items")
 }
 
-// Enums
 enum OrderStatus {
   PENDING
   PROCESSING

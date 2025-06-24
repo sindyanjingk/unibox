@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LogOut, User } from 'lucide-react';
 
 interface NavigationProps {
@@ -15,16 +15,6 @@ interface NavigationProps {
 export default function Navigation({ currentPage, showRegisterButton = true }: NavigationProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    // Check if user is logged in (from localStorage for demo purposes)
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setIsLoggedIn(true);
-      setUserName(user.name || user.fullName || 'User');
-    }
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('userData');

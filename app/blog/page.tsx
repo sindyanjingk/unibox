@@ -9,10 +9,6 @@ import {
   User, 
   Eye, 
   ArrowRight,
-  TrendingUp,
-  Lightbulb,
-  DollarSign,
-  Target,
   MessageCircle,
   Share2
 } from 'lucide-react';
